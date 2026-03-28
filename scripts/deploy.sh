@@ -35,16 +35,19 @@ print_status "System list updated"
 # 2. Dependencies
 echo ""
 echo "2. Kerakli paketlar o'rnatilmoqda..."
+
+# NodeSource ishlatilganda nodejs paketi npm'ni o'z ichiga oladi, 
+# shuning uchun npm'ni alohida yozish konflikt keltirib chiqarishi mumkin.
 apt-get install -y \
     golang-go \
     nodejs \
-    npm \
     nginx \
     git \
     certbot \
     python3-certbot-nginx \
     ufw \
     sqlite3
+
 print_status "Packages installed"
 
 # 3. Create directories
