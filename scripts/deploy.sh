@@ -12,9 +12,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Skript joylashgan joyni loyiha markazi (Root) sifatida belgilaymiz
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 PROJECT_NAME="magazin"
-PROJECT_DIR="/home/magazin-production"
-APP_PORT="8080" # Boshqa loyihalar bilan to'qnashmasligi uchun portni tekshiring
+APP_PORT="8080"
 USER="www-data"
 GROUP="www-data"
 
@@ -60,9 +63,19 @@ print_status "Directories created"
 # 4. Backend Build
 echo ""
 echo "4. Go Backend build qilinmoqda..."
-cd $PROJECT_DIR/backend
-CGO_ENABLED=1 go build -o magazin-server main.go
-print_status "Backend built"
+cd "$PROJECT_DIR/backend"
+
+if [ ! -f "go.mod" ]; then
+    print_error "backend/ ichida go.mod topilmadi! PROEKT_DIR: $PROJECT_DIR"
+    exit 1
+fi
+
+echo "Go versiyasi tekshirilmoqda..."
+go version
+# Bazan go.mod versiyasi go version'dan yuqori bo'lsa xato berishi mumkin
+# Shuningdek go build main.go o'rniga modulni build qilamiz
+CGO_ENABLED=1 go build -o magazin-server .
+print_status "Backend built (magazin-server)"
 
 # 5. Frontend Build
 echo ""
