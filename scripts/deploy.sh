@@ -14,6 +14,7 @@ NC='\033[0m'
 
 PROJECT_NAME="magazin"
 PROJECT_DIR="/home/magazin-production"
+APP_PORT="8080" # Boshqa loyihalar bilan to'qnashmasligi uchun portni tekshiring
 USER="www-data"
 GROUP="www-data"
 
@@ -25,12 +26,11 @@ echo "========================================="
 echo "  Magazin Production setup"
 echo "========================================="
 
-# 1. Update system
+# 1. Update system (Faqat ro'yxatni yangilaymiz, boshqa loyihalarga ta'sir qilmaslik uchun upgrade qilmaymiz)
 echo ""
-echo "1. System yangilanmoqda..."
+echo "1. System paketlar ro'yxati yangilanmoqda..."
 apt-get update
-apt-get upgrade -y
-print_status "System updated"
+print_status "System list updated"
 
 # 2. Dependencies
 echo ""
@@ -95,7 +95,7 @@ Group=$GROUP
 WorkingDirectory=$PROJECT_DIR/backend
 ExecStart=$PROJECT_DIR/backend/magazin-server
 Restart=always
-Environment=PORT=8080
+Environment=PORT=$APP_PORT
 Environment=DB_PATH=$PROJECT_DIR/backend/magazin.db
 
 [Install]
@@ -105,7 +105,7 @@ EOF
 systemctl daemon-reload
 systemctl enable magazin
 systemctl restart magazin
-print_status "Systemd service configured"
+print_status "Systemd service configured (Port: $APP_PORT)"
 
 # 8. Nginx configuration
 echo ""
@@ -122,7 +122,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:$APP_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -136,22 +136,27 @@ server {
 EOF
 
 ln -sf /etc/nginx/sites-available/magazin /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
+# Avvalgi loyihalarga xalaqit bermaslik uchun defaultni o'chirmaymiz (agar server_name to'g'ri bo'lsa shart emas)
+# rm -f /etc/nginx/sites-enabled/default 
+
 nginx -t
-systemctl restart nginx
+systemctl reload nginx
 print_status "Nginx configured"
 
 # 9. SSL via Certbot (Optional: requires domain pointing)
 # print_warning "SSL sertifikat o'rnatilsinmi? (y/n)"
 # certbot --nginx -d nextmarket.uz -d www.nextmarket.uz --non-interactive --agree-tos -m admin@nextmarket.uz
 
-# 10. Firewall
+# 10. Firewall (Faqat kerakli portlarni ochamiz, xizmatni majburan yoqmaymiz)
 echo ""
 echo "10. Firewall sozlanmoqda..."
-ufw allow 'Nginx Full'
-ufw allow 'OpenSSH'
-ufw --force enable
-print_status "Firewall configured"
+if command -v ufw > /dev/null; then
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    print_status "Firewall ports allowed"
+else
+    print_warning "ufw topilmadi, firewall o'tkazib yuborildi"
+fi
 
 echo ""
 echo "========================================="

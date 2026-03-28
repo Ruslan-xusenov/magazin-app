@@ -1,6 +1,11 @@
 # 🚀 Magazin (NextMarket) Production Automation Scripts
 
-Ushbu katalogda loyihani production serverda o'rnatish, yangilash va zaxira nusxasini olish uchun ishlatiladigan skriptlar mavjud.
+Ushbu katalogda loyihani production serverda o'rnatish, yangilash va zaxira nusxasini olish uchun ishlatiladigan skriptlar mavjud. Skriptlar serverda boshqa loyihalar bo'lsa ham ularga xalaqit bermaydigan qilib sozlangan.
+
+## ⚠️ Xavfsizlik va Izolyatsiya
+*   **Portlar**: Backend porti (`APP_PORT="8080"`) o'zgaruvchi orqali boshqariladi. Agar serverda boshqa loyiha 8080 portini band qilgan bo'lsa, uni `deploy.sh` ichida o'zgartirishingiz mumkin.
+*   **Nginx**: Boshqa saytlarning sozlamalariga tegmaydi (faqat `reload` qiladi), faqat o'zining `nextmarket.uz` domenini qo'shadi.
+*   **System Upgrade**: `apt-get upgrade` buyrug'i olib tashlandi, shuning uchun boshqa loyihalarning kutubxonalari versiyalari o'zgarmaydi.
 
 ## 1. Dastlabki o'rnatish (`deploy.sh`)
 Ushbu skript yangi serverda (Ubuntu/Debian) loyiha uchun kerakli barcha paketlarni o'rnatadi, backend va frontendni build qiladi va Nginx hamda Systemd xizmatini sozlaydi.
